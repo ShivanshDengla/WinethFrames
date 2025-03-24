@@ -1,26 +1,27 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  // Only accept POST requests from frames
-  if (req.method !== 'POST') {
+  // Accept both GET and POST requests
+  if (req.method !== 'POST' && req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  // Get the action from the request
-  const { action, fid, address } = req.body;
+  // Get the action from the request (either from body or query)
+  const action = req.method === 'POST' 
+    ? req.body?.untrustedData?.buttonIndex || 1
+    : req.query.action || 'home';
 
-  // Handle different actions
+  // Handle different actions based on button index
   switch (action) {
-    case 'home':
-      return handleHome(res);
+    case 1:
     case 'deposit':
       return handleDeposit(res);
+    case 2:
     case 'withdraw':
       return handleWithdraw(res);
+    case 3:
     case 'balance':
-      return handleBalance(res, address);
-    case 'rewards':
-      return handleRewards(res, address);
+      return handleBalance(res);
     default:
       return handleHome(res);
   }
@@ -31,26 +32,10 @@ function handleHome(res: NextApiResponse) {
   return res.status(200).json({
     image: "https://wineth-frames.vercel.app/images/embed.png",
     buttons: [
-      {
-        label: "Deposit",
-        action: "post",
-        target: "https://wineth-frames.vercel.app/api/frame-action?action=deposit"
-      },
-      {
-        label: "Withdraw",
-        action: "post",
-        target: "https://wineth-frames.vercel.app/api/frame-action?action=withdraw"
-      },
-      {
-        label: "My Balance",
-        action: "post",
-        target: "https://wineth-frames.vercel.app/api/frame-action?action=balance"
-      },
-      {
-        label: "Visit Website",
-        action: "link",
-        target: "https://wineth.org"
-      }
+      { label: "Deposit" },
+      { label: "Withdraw" },
+      { label: "My Balance" },
+      { label: "Visit Website", action: "link", target: "https://wineth.org" }
     ]
   });
 }
@@ -58,18 +43,10 @@ function handleHome(res: NextApiResponse) {
 // Deposit screen
 function handleDeposit(res: NextApiResponse) {
   return res.status(200).json({
-    image: "https://wineth-frames.vercel.app/images/deposit.png",
+    image: "https://wineth-frames.vercel.app/images/embed.png",
     buttons: [
-      {
-        label: "Connect Wallet to Deposit",
-        action: "link",
-        target: "https://wineth.org/deposit"
-      },
-      {
-        label: "Back to Menu",
-        action: "post",
-        target: "https://wineth-frames.vercel.app/api/frame-action?action=home"
-      }
+      { label: "Connect Wallet to Deposit", action: "link", target: "https://wineth.org" },
+      { label: "Back to Menu" }
     ]
   });
 }
@@ -77,59 +54,21 @@ function handleDeposit(res: NextApiResponse) {
 // Withdraw screen
 function handleWithdraw(res: NextApiResponse) {
   return res.status(200).json({
-    image: "https://wineth-frames.vercel.app/images/withdraw.png",
+    image: "https://wineth-frames.vercel.app/images/embed.png",
     buttons: [
-      {
-        label: "Connect Wallet to Withdraw",
-        action: "link",
-        target: "https://wineth.org/withdraw"
-      },
-      {
-        label: "Back to Menu",
-        action: "post",
-        target: "https://wineth-frames.vercel.app/api/frame-action?action=home"
-      }
+      { label: "Connect Wallet to Withdraw", action: "link", target: "https://wineth.org" },
+      { label: "Back to Menu" }
     ]
   });
 }
 
 // Balance screen
-async function handleBalance(res: NextApiResponse, address?: string) {
-  // If we have an address, we could fetch real balance data
-  // For now, we'll just show a generic balance screen
-  
+async function handleBalance(res: NextApiResponse) {
   return res.status(200).json({
-    image: "https://wineth-frames.vercel.app/images/balance.png",
+    image: "https://wineth-frames.vercel.app/images/embed.png",
     buttons: [
-      {
-        label: "View My Balance",
-        action: "link",
-        target: "https://wineth.org/dashboard"
-      },
-      {
-        label: "Back to Menu",
-        action: "post",
-        target: "https://wineth-frames.vercel.app/api/frame-action?action=home"
-      }
-    ]
-  });
-}
-
-// Rewards screen
-async function handleRewards(res: NextApiResponse, address?: string) {
-  return res.status(200).json({
-    image: "https://wineth-frames.vercel.app/images/rewards.png",
-    buttons: [
-      {
-        label: "Claim Rewards",
-        action: "link",
-        target: "https://wineth.org/rewards"
-      },
-      {
-        label: "Back to Menu",
-        action: "post",
-        target: "https://wineth-frames.vercel.app/api/frame-action?action=home"
-      }
+      { label: "View My Balance", action: "link", target: "https://wineth.org/dashboard" },
+      { label: "Back to Menu" }
     ]
   });
 } 
